@@ -406,6 +406,7 @@ input::placeholder, textarea::placeholder {
 
 .map {
   height: 100%;
+  min-height: 700px;
 }
 
 .feedback {

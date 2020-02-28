@@ -8,17 +8,50 @@ function init(){
         behaviors: ['drag']
     });
 
+    geoObjects = [];
+    placemarks = {};
+
     map.events.add('click', function (e) {
         var coords = e.get('coords');
+
         map.balloon.open(coords, {
-            contentHeader:'Событие!',
-            contentBody:'<p>Кто-то щелкнул по карте.</p>' +
-                '<p>Координаты щелчка: ' + [
-                coords[0].toPrecision(6),
-                coords[1].toPrecision(6)
-                ].join(', ') + '</p>',
-            contentFooter:'<sup>Щелкните еще раз</sup>'
+            contentHeader: [
+                '<div class="feedback">',
+                    '<header class="feedback__header"></header>',
+            ].join(''),
+            contentBody: [
+                    '<div class="feedback-content">',
+                        '<div class="feedback-list"></div>',
+                        '<form class="feedback-form" action="">',
+                            '<h1 class="feedback-form__title">ВАШ ОТЗЫВ</h1>',
+                            '<input type="text" class="feedback-form__input" placeholder="Ваше имя">',
+                            '<input type="text" class="feedback-form__input" placeholder="Укажите место">',
+                            '<textarea name="" class="feedback-form__input" id="" cols="30" rows="10" placeholder="Поделитесь впечатлениями"></textarea>',
+                            '<button class="feedback-form__button" id="add">Добавить</button>',
+                        '</form>',
+                    '</div>',
+                '</div>',
+            ].join('')
         });
+    });
+
+    var addButton = document.querySelector('#add');
+
+    addButton.events.add('click', (e) => {
+        var coords = e.get('coords');
+
+        var placemark = new ymaps.Placemark([coords[0].toPrecision(6), coords[1].toPrecision(6)], 
+            {
+                balloonContent: [
+                                '<div class="map__balloon">',
+                                '<img class="map__burger-img" src="img/burger.png" alt="Бургер" style="width: 100px; height: 100px"/>',
+                                'Самые вкусные бургеры у нас!',
+                                '</div>'
+                            ].join('')
+            });
+
+            map.geoObjects.add(placemark);
+
     });
 }
 

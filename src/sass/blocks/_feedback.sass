@@ -1,5 +1,7 @@
 .feedback 
+    background-color: $background-color
     max-width: 379px
+    min-height: 527px
     border-radius: 12px
     display: flex
     flex-direction: column
@@ -10,12 +12,16 @@
         color: $background-color
         padding: 16px 14px
         font-size: 12px
+        display: flex
+        justify-content: space-between
     &-content 
         padding: 14px
     &-list 
         min-height: 150px
     &-form 
         border-top: 1px solid $line-color
+        display: flex
+        flex-direction: column
         &__title 
             text-transform: uppercase
             font-size: 16px
@@ -37,6 +43,6 @@
             border-radius: 15px
             padding: 10px 17px
             font-weight: 300
-            align-self: end
+            align-self: flex-end
         
         

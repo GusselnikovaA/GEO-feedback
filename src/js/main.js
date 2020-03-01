@@ -1,7 +1,7 @@
 ymaps.ready(init);
 
 function init(){
-    var map = new ymaps.Map("map", {
+    const map = new ymaps.Map("map", {
             center: [59.94, 30.32],
             zoom: 12,
             controls: ['zoomControl'],
@@ -9,115 +9,58 @@ function init(){
     });
 
         // создаем макет балуна
-        // BalloonLayout = ymaps.templateLayoutFactory.createClass(
-        //         [
-        //         '<div class="feedback">',
-        //             '<header class="feedback__header">',
-        //                 '<img src="img/location.png" alt="location">',
-        //                 '<div class="feedback__address">',
-        //                 '$[data.contentHeader]',
-        //                 '</div>',
-        //                 '<img class="close" src="img/close.png" alt="close"></img>',
-        //             '</header>',
-        //         '<div class="feedback-content">',
-        //         '$[[options.contentLayout observeSize minWidth=379 maxWidth=379 minHeight=350]]',
-        //         '</div>',
-        // '</div>'].join(''), {
+        BalloonLayout = ymaps.templateLayoutFactory.createClass([
+            '<div class="feedback">',
+                '<header class="feedback__header">',
+                    '<img src="img/location.png" alt="">',
+                    '<div class="feedback__address"></div>',
+                    '<img class="feedback__close" src="img/close.png" alt=""></img>',
+                '</header>',
+                '<div class="feedback-content">',
+                    '<div class="feedback-list"></div>',
+                    '<form class="feedback-form" action="">',
+                        '<h1 class="feedback-form__title">ВАШ ОТЗЫВ</h1>',
+                        '<input type="text" class="feedback-form__input" placeholder="Ваше имя">',
+                        '<input type="text" class="feedback-form__input" placeholder="Укажите место">',
+                        '<textarea class="feedback-form__input" rows="6" placeholder="Поделитесь впечатлениями"></textarea>',
+                        '<button class="feedback-form__button" id="add">Добавить</button>',
+                    '</form>',
+                '</div>',
+            '</div>'].join(''), {
 
-        //         build: function () {
-        //             this.constructor.superclass.build.call(this);
+                build: function () {
+                    this.constructor.superclass.build.call(this);
+                    const button = document.querySelector('.feedback-form__button');
+                    const close = document.querySelector('.feedback__close');
+                    button.addEventListener('click', this.addFeedback);
+                    close.addEventListener('click', this.onCloseClick)
+                },
 
-        //             this._$element = $('.feedback', this.getParentElement());
+                clear: function () {
+                    button.removeEventListener('click', this.addFeedback);
+                    close.removeEventListener('click', this.onCloseClick);
+                    this.constructor.superclass.clear.call(this);
+                },
 
-        //             this.applyElementOffset();
+                onCloseClick: function (e) {
+                    e.preventDefault();
 
-        //             this._$element.find('.close')
-        //                 .on('click', $.proxy(this.onCloseClick, this));
-        //         },
+                    this.events.fire('userclose');
+                },
 
-        //         clear: function () {
-        //             this._$element.find('.close')
-        //                 .off('click');
-
-        //             this.constructor.superclass.clear.call(this);
-        //         },
-
-        //         onCloseClick: function (e) {
-        //             e.preventDefault();
-
-        //             this.events.fire('userclose');
-        //         }
-        //     }),
-
-               // создаем макет содежимого балуна
-        //     BalloonContentLayout = ymaps.templateLayoutFactory.createClass( [
-        //                 '<div class="feedback-list">',
-        //                 '$[data.contentBody]',
-        //                 '</div>',
-        //                 '<form class="feedback-form" action="">',
-        //                     '<h1 class="feedback-form__title">ВАШ ОТЗЫВ</h1>',
-        //                     '<input type="text" class="feedback-form__input" placeholder="Ваше имя">',
-        //                     '<input type="text" class="feedback-form__input" placeholder="Укажите место">',
-        //                     '<textarea class="feedback-form__input" rows="6" placeholder="Поделитесь впечатлениями"></textarea>',
-        //                     '<button class="feedback-form__button" id="add">Добавить</button>',
-        //                 '</form>'].join('')
-        //     );
-
-    // Создание макета содержимого балуна
-    BalloonContentLayout = ymaps.templateLayoutFactory.createClass( [
-        '<div class="feedback">',
-            '<header class="feedback__header">',
-                '<img src="img/location.png" alt="">',
-                '<div class="feedback__address"></div>',
-                '<img src="img/close.png" alt=""></img>',
-            '</header>',
-            '<div class="feedback-content">',
-                '<div class="feedback-list"></div>',
-                '<form class="feedback-form" action="">',
-                    '<h1 class="feedback-form__title">ВАШ ОТЗЫВ</h1>',
-                    '<input type="text" class="feedback-form__input" placeholder="Ваше имя">',
-                    '<input type="text" class="feedback-form__input" placeholder="Укажите место">',
-                    '<textarea class="feedback-form__input" rows="6" placeholder="Поделитесь впечатлениями"></textarea>',
-                    '<button class="feedback-form__button" id="add">Добавить</button>',
-                '</form>',
-            '</div>',
-        '</div>'].join('')
-        , {
-            //Переопределяем функцию build, чтобы при создании макета начинать
-            //слушать событие click на кнопке
-            build: function () {
-                // Сначала вызываем метод build родительского класса.
-                this.constructor.superclass.build.call(this);
-                // А затем выполняем дополнительные действия.
-                // var button = querySelector('.feedback-form__button');
-                // button.addEventListener('click', this.addFeedback)
-            },
-
-            //Аналогично переопределяем функцию clear, чтобы снять
-            //прослушивание клика при удалении макета с карты.
-            clear: function () {
-                // Выполняем действия в обратном порядке - сначала снимаем слушателя,
-                // а потом вызываем метод clear родительского класса.
-                // button.removeEventListener('click', this.addFeedback);
-                BalloonContentLayout.superclass.clear.call(this);
-            },
-
-            addFeedback: function () {
-                console.log('add')
-            }
-        }
-    );
+                addFeedback: function () {
+                    console.log('add')
+                }
+            }),
 
     map.events.add('click', function (e) {
         var coords = e.get('coords');
 
         map.balloon.open(coords, {
-            // contentHeader: 'Петербург', 
-            // contentBody: 'Отзывы должны подгружаться сюда'
         }, 
         {
-            // layout: BalloonLayout,
-            contentLayout: BalloonContentLayout,
+            layout: BalloonLayout,
+            // contentLayout: BalloonLayout,
             minWidth: 379,
             minHeight: 527
         });

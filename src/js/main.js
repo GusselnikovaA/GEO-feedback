@@ -1,68 +1,174 @@
 ymaps.ready(init);
 
+let placemarks = [
+    {
+        "coords": [55.758354480999806, 37.606096878051744],
+        "address": "Some address 1",
+        "feedback": "Text review 1"
+    },
+    {
+        "coords": [55.76212939165674, 37.60558189392088],
+        "address": "Some address 2",
+        "feedback": "Text review 2"
+    },
+    {
+        "coords": [55.7606775463713, 37.599573745727525],
+        "address": "Some address 3",
+        "feedback": "Text review 3"
+    },
+    {
+        "coords": [55.762613328021914, 37.59974540710447],
+        "address": "Some address 4",
+        "feedback": "Text review 4"
+    },
+    {
+        "coords": [55.77509680112331, 37.641115798950175],
+        "address": "Some address 5",
+        "feedback": "Text review 5"
+    },
+    {
+        "coords": [55.7889303785291, 37.60506690979002],
+        "address": "Some address 6",
+        "feedback": "Text review 6"
+    },
+    {
+        "coords": [55.7739357171593, 37.69021095275878],
+        "address": "Some address 7",
+        "feedback": "Text review 7"
+    }
+];
+
+
 function init(){
-    const map = new ymaps.Map("map", {
+    // создаем макет балуна
+    const BalloonLayout = ymaps.templateLayoutFactory.createClass([
+        '<div class="feedback">',
+            '<header class="feedback__header">',
+                '<div class="feedback__geo"><img src="img/location.png" alt="location"></div>',
+                '<div class="feedback__address">$[properties.address]</div>',
+                '<button class="feedback__close"><img src="img/close.png" alt="close"></img></button>',
+            '</header>',
+            '<div class="feedback-content">',
+                '<div class="feedback-list">',
+                    '<ul>{% fir item in properties.feedback %}',
+                        '<li>',
+                            '<div class="feedback__name">$[item.name]</div>',
+                            '<div class="feedback__location">$[item.address]</div>',
+                        '</li>',
+                        '<li><div class="feedback__text">$[item.text]</div></li>',
+                        '{% end for %}',
+                    '</ul>',
+                '</div>',
+                '<form class="feedback-form" action="#">',
+                    '<h1 class="feedback-form__title">ВАШ ОТЗЫВ</h1>',
+                    '<input type="text" class="feedback-form__input" placeholder="Ваше имя">',
+                    '<input type="text" class="feedback-form__input" placeholder="Укажите место">',
+                    '<textarea class="feedback-form__input" rows="6" placeholder="Поделитесь впечатлениями"></textarea>',
+                    '<button class="feedback-form__button" id="add">Добавить</button>',
+                '</form>',
+            '</div>',
+        '</div>'].join(''), {
+
+            build: function () {
+                BalloonLayout.superclass.build.call(this);
+                // const addButton = document.querySelector('.feedback-form__button');
+                const closeButton = document.querySelector('.feedback__close');
+
+                // addButton.addEventListener('click', () => { 
+                //     this.addFeedback();
+                // });
+                closeButton.addEventListener('click', () => { 
+                    this.onCloseClick();
+                })
+            },
+
+            clear: function () {
+                // const addButton = document.querySelector('.feedback-form__button');
+                const closeButton = document.querySelector('.feedback__close');
+
+                // addButton.removeEventListener('click', () => {
+                //     this.addFeedback()
+                // });
+                closeButton.removeEventListener('click', () => {
+                    this.onCloseClick();
+                });
+                BalloonLayout.superclass.clear.call(this);
+            },
+
+            onCloseClick: function () {
+                this.events.fire('userclose');
+            },
+
+            // addFeedback: function (e) {
+            //     const coords = e.get('coords');
+            //     const placemark = new ymaps.Placemark([59.94, 30.32], {
+            //         address: 'Some address point',
+            //         feedbacks: [
+            //             { name: 'Name 1', text: 'Text 1' },
+            //             { name: 'Name 2', text: 'Text 2' },
+            //             { name: 'Name 3', text: 'Text 3' }
+            //         ]
+            //     });
+            
+            //     map.geoObjects.add(placemark);
+            // }
+        }),
+
+    map = new ymaps.Map("map", {
             center: [59.94, 30.32],
             zoom: 12,
             controls: ['zoomControl'],
             behaviors: ['drag']
+    }, { balloonLayout: BalloonLayout});
+
+    const clasterContentLayout = ymaps.templateLayoutFactory.createClass(`
+    <div class="cluster__header">Заголовок</div>
+    <div class="cluster__link"><a class="search_by_address">{{ properties.address|raw }}</a></div>
+    <div class=cluster__review>{{ properties.review|raw }}</div>`);
+
+    const clusterer = new ymaps.Clusterer({
+        preset: 'islands#invertedVioletClusterIcons', // стили кластера
+        clusterBalloonContentLayout: 'cluster#balloonCarousel',
+        balloonLayout: 'islands#balloon', // переопределяем кастомный popup на стандартный
+        clusterBalloonItemContentLayout: clasterContentLayout,
+        clusterBalloonPanelMaxMapArea: 0, // не будет открываться в режиме панели
+        clusterBalloonPagerSize: 5, // кол-во страниц
+        groupByCoordinates: false, // если true то группирует только с одинаковыми координатами
+        clusterDisableClickZoom: true, // отключаем зумирование при клике на кластер
+        clusterHideIconOnBalloonOpen: false,
     });
 
-        // создаем макет балуна
-        BalloonLayout = ymaps.templateLayoutFactory.createClass([
-            '<div class="feedback">',
-                '<header class="feedback__header">',
-                    '<img src="img/location.png" alt="">',
-                    '<div class="feedback__address"></div>',
-                    '<img class="feedback__close" src="img/close.png" alt=""></img>',
-                '</header>',
-                '<div class="feedback-content">',
-                    '<div class="feedback-list"></div>',
-                    '<form class="feedback-form" action="">',
-                        '<h1 class="feedback-form__title">ВАШ ОТЗЫВ</h1>',
-                        '<input type="text" class="feedback-form__input" placeholder="Ваше имя">',
-                        '<input type="text" class="feedback-form__input" placeholder="Укажите место">',
-                        '<textarea class="feedback-form__input" rows="6" placeholder="Поделитесь впечатлениями"></textarea>',
-                        '<button class="feedback-form__button" id="add">Добавить</button>',
-                    '</form>',
-                '</div>',
-            '</div>'].join(''), {
+    placemarks.forEach(item => {
+        const point = new ymaps.Placemark(item.coords, {
+            address: item.address,
+            review: item.feedback,
+        }, {
+            preset: 'islands#violetIcon'
+        });
 
-                build: function () {
-                    this.constructor.superclass.build.call(this);
-                    const button = document.querySelector('.feedback-form__button');
-                    const close = document.querySelector('.feedback__close');
-                    button.addEventListener('click', this.addFeedback);
-                    close.addEventListener('click', this.onCloseClick)
-                },
+        clusterer.add(point);
+    });
 
-                clear: function () {
-                    button.removeEventListener('click', this.addFeedback);
-                    close.removeEventListener('click', this.onCloseClick);
-                    this.constructor.superclass.clear.call(this);
-                },
-
-                onCloseClick: function (e) {
-                    e.preventDefault();
-
-                    this.events.fire('userclose');
-                },
-
-                addFeedback: function () {
-                    console.log('add')
-                }
-            }),
+    map.geoObjects.add(clusterer);
 
     map.events.add('click', function (e) {
-        var coords = e.get('coords');
+        const coords = e.get('coords');
+        const geoCoords = ymaps.geocode(coords);
+        const position = e.get('position');
 
-        map.balloon.open(coords, {
-        }, 
-        {
-            layout: BalloonLayout,
-            // contentLayout: BalloonLayout,
-            minWidth: 379,
-            minHeight: 527
+        geoCoords.then(function (res) {
+            const firstGeoObject = res.geoObjects.get(0);
+            let obj = {}
+
+            obj.coords = coords;
+            obj.address = firstGeoObject.properties.get('text');
+            obj.feedback = [];
+        
+            map.balloon.open(coords, {
+                properties: {
+                    address: obj.address
+                }
+            });
         });
     });
 }

@@ -411,7 +411,7 @@ input::placeholder, textarea::placeholder {
 
 .feedback {
   background-color: #ffffff;
-  max-width: 379px;
+  width: 379px;
   min-height: 527px;
   border-radius: 12px;
   display: -webkit-box;
@@ -421,6 +421,8 @@ input::placeholder, textarea::placeholder {
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
+  -webkit-filter: grayscale(0);
+          filter: grayscale(0);
 }
 
 .feedback__header {
@@ -436,6 +438,19 @@ input::placeholder, textarea::placeholder {
   -webkit-box-pack: justify;
       -ms-flex-pack: justify;
           justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.feedback__geo {
+  min-width: 8px;
+  margin-right: 10px;
+}
+
+.feedback__close {
+  min-width: 14px;
+  margin-left: 10px;
 }
 
 .feedback-content {

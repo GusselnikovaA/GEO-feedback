@@ -1,10 +1,11 @@
 .feedback 
     background-color: $background-color
-    max-width: 379px
+    width: 379px
     min-height: 527px
     border-radius: 12px
     display: flex
     flex-direction: column
+    filter: grayscale(0)
     &__header
         border-top-left-radius: 12px
         border-top-right-radius: 12px
@@ -14,6 +15,13 @@
         font-size: 12px
         display: flex
         justify-content: space-between
+        align-items: center
+    &__geo
+        min-width: 8px
+        margin-right: 10px
+    &__close 
+        min-width: 14px
+        margin-left: 10px
     &-content 
         padding: 14px
     &-list 

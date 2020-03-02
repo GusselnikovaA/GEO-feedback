@@ -459,6 +459,20 @@ input::placeholder, textarea::placeholder {
 
 .feedback-list {
   min-height: 150px;
+  color: #4f4f4f;
+  margin-bottom: 25px;
+}
+
+.feedback__name {
+  margin-right: 14px;
+}
+
+.feedback__location {
+  color: dimgray;
+}
+
+.feedback__text {
+  margin-top: 14px;
 }
 
 .feedback-form {

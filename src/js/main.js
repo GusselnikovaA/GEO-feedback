@@ -1,42 +1,7 @@
 ymaps.ready(init);
 
-let placemarks = [
-    {
-        "coords": [55.758354480999806, 37.606096878051744],
-        "address": "Some address 1",
-        "feedback": "Text review 1"
-    },
-    {
-        "coords": [55.76212939165674, 37.60558189392088],
-        "address": "Some address 2",
-        "feedback": "Text review 2"
-    },
-    {
-        "coords": [55.7606775463713, 37.599573745727525],
-        "address": "Some address 3",
-        "feedback": "Text review 3"
-    },
-    {
-        "coords": [55.762613328021914, 37.59974540710447],
-        "address": "Some address 4",
-        "feedback": "Text review 4"
-    },
-    {
-        "coords": [55.77509680112331, 37.641115798950175],
-        "address": "Some address 5",
-        "feedback": "Text review 5"
-    },
-    {
-        "coords": [55.7889303785291, 37.60506690979002],
-        "address": "Some address 6",
-        "feedback": "Text review 6"
-    },
-    {
-        "coords": [55.7739357171593, 37.69021095275878],
-        "address": "Some address 7",
-        "feedback": "Text review 7"
-    }
-];
+let storage = localStorage;
+let placemarks = [];
 
 
 function init(){
@@ -52,18 +17,18 @@ function init(){
                 '<div class="feedback-list">',
                     '<ul>{% fir item in properties.feedback %}',
                         '<li>',
-                            '<div class="feedback__name">$[item.name]</div>',
-                            '<div class="feedback__location">$[item.address]</div>',
+                            '<span class="feedback__name">{{ properties.name|raw }}</span>',
+                            '<span class="feedback__location">{{ properties.location|raw }}</span>',
                         '</li>',
-                        '<li><div class="feedback__text">$[item.text]</div></li>',
+                        '<li><div class="feedback__text">{{ properties.feedback|raw }}</div></li>',
                         '{% end for %}',
                     '</ul>',
                 '</div>',
                 '<form class="feedback-form" action="#">',
                     '<h1 class="feedback-form__title">ВАШ ОТЗЫВ</h1>',
-                    '<input type="text" class="feedback-form__input" placeholder="Ваше имя">',
-                    '<input type="text" class="feedback-form__input" placeholder="Укажите место">',
-                    '<textarea class="feedback-form__input" rows="6" placeholder="Поделитесь впечатлениями"></textarea>',
+                    '<input type="text" class="feedback-form__input feedback-form__name" placeholder="Ваше имя">',
+                    '<input type="text" class="feedback-form__input feedback-form__location" placeholder="Укажите место">',
+                    '<textarea class="feedback-form__input feedback-form__text" rows="6" placeholder="Поделитесь впечатлениями"></textarea>',
                     '<button class="feedback-form__button" id="add">Добавить</button>',
                 '</form>',
             '</div>',
@@ -71,24 +36,24 @@ function init(){
 
             build: function () {
                 BalloonLayout.superclass.build.call(this);
-                // const addButton = document.querySelector('.feedback-form__button');
+                const addButton = document.querySelector('.feedback-form__button');
                 const closeButton = document.querySelector('.feedback__close');
 
-                // addButton.addEventListener('click', () => { 
-                //     this.addFeedback();
-                // });
+                addButton.addEventListener('click', () => { 
+                    this.addFeedback();
+                });
                 closeButton.addEventListener('click', () => { 
                     this.onCloseClick();
                 })
             },
 
             clear: function () {
-                // const addButton = document.querySelector('.feedback-form__button');
+                const addButton = document.querySelector('.feedback-form__button');
                 const closeButton = document.querySelector('.feedback__close');
 
-                // addButton.removeEventListener('click', () => {
-                //     this.addFeedback()
-                // });
+                addButton.removeEventListener('click', () => {
+                    this.addFeedback();
+                });
                 closeButton.removeEventListener('click', () => {
                     this.onCloseClick();
                 });
@@ -99,19 +64,44 @@ function init(){
                 this.events.fire('userclose');
             },
 
-            // addFeedback: function (e) {
-            //     const coords = e.get('coords');
-            //     const placemark = new ymaps.Placemark([59.94, 30.32], {
-            //         address: 'Some address point',
-            //         feedbacks: [
-            //             { name: 'Name 1', text: 'Text 1' },
-            //             { name: 'Name 2', text: 'Text 2' },
-            //             { name: 'Name 3', text: 'Text 3' }
-            //         ]
-            //     });
-            
-            //     map.geoObjects.add(placemark);
-            // }
+            addFeedback: function(e) {
+                const feedbackName = document.querySelector('.feedback-form__name');
+                const feedbackLocation = document.querySelector('.feedback-form__location');
+                const feedbackText = document.querySelector('.feedback-form__text');
+                const coords = e.get('coords');
+
+                // сохраняем введенные данные в LS 
+                if (feedbackName.length != 0 && feedbackLocation.length != 0 && feedbackText.length != 0) {
+                    try {
+                        storage.data = JSON.stringify({
+                            name: feedbackName.value,
+                            location: feedbackLocation.value,
+                            feedback: feedbackText.value
+                        });
+                    } catch (e) {
+                        console.error('Не удалось сохранить данные');
+                    }
+                }
+
+                let data = JSON.parse(storage.data || '{}');
+                placemarks.push(data);
+                
+                console.log(placemarks);
+                console.log(coords);
+                
+                placemarks.forEach(point => {
+                    const placemark = new ymaps.Placemark(coords, {
+                        address: 'Some address point',
+                        name: point.name, 
+                        location: point.location,
+                        feedback: point.feedback 
+                        
+                    });
+                
+                    map.geoObjects.add(placemark);
+                    clusterer.add(placemark);
+                })
+            }
         }),
 
     map = new ymaps.Map("map", {
@@ -124,10 +114,10 @@ function init(){
     const clasterContentLayout = ymaps.templateLayoutFactory.createClass(`
     <div class="cluster__header">Заголовок</div>
     <div class="cluster__link"><a class="search_by_address">{{ properties.address|raw }}</a></div>
-    <div class=cluster__review>{{ properties.review|raw }}</div>`);
+    <div class=cluster__review>{{ properties.feedback|raw }}</div>`);
 
     const clusterer = new ymaps.Clusterer({
-        preset: 'islands#invertedVioletClusterIcons', // стили кластера
+        preset: 'islands#invertedOrangeClusterIcons', // стили кластера
         clusterBalloonContentLayout: 'cluster#balloonCarousel',
         balloonLayout: 'islands#balloon', // переопределяем кастомный popup на стандартный
         clusterBalloonItemContentLayout: clasterContentLayout,
@@ -136,17 +126,6 @@ function init(){
         groupByCoordinates: false, // если true то группирует только с одинаковыми координатами
         clusterDisableClickZoom: true, // отключаем зумирование при клике на кластер
         clusterHideIconOnBalloonOpen: false,
-    });
-
-    placemarks.forEach(item => {
-        const point = new ymaps.Placemark(item.coords, {
-            address: item.address,
-            review: item.feedback,
-        }, {
-            preset: 'islands#violetIcon'
-        });
-
-        clusterer.add(point);
     });
 
     map.geoObjects.add(clusterer);

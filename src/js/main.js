@@ -1,7 +1,7 @@
 ymaps.ready(init);
 
 let storage = localStorage;
-let placemarks = [];
+let feedbacks = [];
 
 
 function init(){
@@ -15,10 +15,11 @@ function init(){
             '</header>',
             '<div class="feedback-content">',
                 '<div class="feedback-list">',
-                    '<ul>{% fir item in properties.feedback %}',
+                    '<ul>{% for item in properties.feedback %}',
                         '<li>',
                             '<span class="feedback__name">{{ properties.name|raw }}</span>',
                             '<span class="feedback__location">{{ properties.location|raw }}</span>',
+                            '<span class="feedback__date">{{ properties.date|raw }}</span>',
                         '</li>',
                         '<li><div class="feedback__text">{{ properties.feedback|raw }}</div></li>',
                         '{% end for %}',
@@ -41,6 +42,7 @@ function init(){
 
                 addButton.addEventListener('click', () => { 
                     this.addFeedback();
+                    this.addPoint();
                 });
                 closeButton.addEventListener('click', () => { 
                     this.onCloseClick();
@@ -68,35 +70,68 @@ function init(){
                 const feedbackName = document.querySelector('.feedback-form__name');
                 const feedbackLocation = document.querySelector('.feedback-form__location');
                 const feedbackText = document.querySelector('.feedback-form__text');
-                const coords = e.get('coords');
+                const name = document.querySelector('.feedback__name');
+                const location = document.querySelector('.feedback__location');
+                const text = document.querySelector('.feedback__text');
+                const time = document.querySelector('.feedback__date');
+                const date = new Date();
 
                 // сохраняем введенные данные в LS 
-                if (feedbackName.length != 0 && feedbackLocation.length != 0 && feedbackText.length != 0) {
+                if (feedbackName.value == '' || feedbackLocation.value == '' || feedbackText.value == '') {
+                    console.error('Заполните все поля!');
+
+                    return;
+                } else {
                     try {
                         storage.data = JSON.stringify({
                             name: feedbackName.value,
                             location: feedbackLocation.value,
-                            feedback: feedbackText.value
+                            feedback: feedbackText.value,
+                            date: date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
                         });
                     } catch (e) {
                         console.error('Не удалось сохранить данные');
                     }
                 }
 
+                // сохраняем данные с LS в переменную в json формате
                 let data = JSON.parse(storage.data || '{}');
-                placemarks.push(data);
-                
-                console.log(placemarks);
-                console.log(coords);
-                
-                placemarks.forEach(point => {
+
+                // добавляем созданный комментарий (объект с данными о коммментарии) в массив с комментариями
+                feedbacks.push(data);
+
+                console.log(feedbacks);
+
+                //  НЕ ДОЛЖНО ВЗАИМОЗАМЕНЯТЬ ЕСЛИ НАПИСАТЬ ВТОРОЙ ОТЗЫВ
+                // не выводится в кластер и при открытии метки
+                name.innerHTML = data.name;
+                location.innerHTML = data.location;
+                text.innerHTML = data.feedback;
+                time.innerHTML = data.date;
+
+                // очищаются поля ввода
+                feedbackName.value = '';
+                feedbackLocation.value = '';
+                feedbackText.value = '';
+            }, 
+
+            addPoint: function(e) {
+                const coords = this._data.properties.coords;
+                const address = this._data.properties.address;
+
+                feedbacks.forEach(feedback => {
                     const placemark = new ymaps.Placemark(coords, {
-                        address: 'Some address point',
-                        name: point.name, 
-                        location: point.location,
-                        feedback: point.feedback 
+                        address: address,
+                        name: feedbacks.name, 
+                        location: feedbacks.location,
+                        feedback: feedbacks.feedback,
+                        date: feedbacks.date
                         
+                    }, {
+                        preset: 'islands#orangeIcon'
                     });
+    
+                    console.log(placemark)
                 
                     map.geoObjects.add(placemark);
                     clusterer.add(placemark);
@@ -133,7 +168,6 @@ function init(){
     map.events.add('click', function (e) {
         const coords = e.get('coords');
         const geoCoords = ymaps.geocode(coords);
-        const position = e.get('position');
 
         geoCoords.then(function (res) {
             const firstGeoObject = res.geoObjects.get(0);
@@ -145,11 +179,14 @@ function init(){
         
             map.balloon.open(coords, {
                 properties: {
-                    address: obj.address
+                    coords: obj.coords,
+                    address: obj.address,
+                    location: "Отзывов пока нет..."
                 }
             });
         });
     });
+
 }
 
 

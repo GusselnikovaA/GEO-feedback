@@ -468,7 +468,12 @@ input::placeholder, textarea::placeholder {
 }
 
 .feedback__location {
-  color: dimgray;
+  color: #828282;
+  margin-right: 14px;
+}
+
+.feedback__date {
+  color: #828282;
 }
 
 .feedback__text {

@@ -521,4 +521,37 @@ input::placeholder, textarea::placeholder {
   -ms-flex-item-align: end;
       align-self: flex-end;
 }
+
+.cluster {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  min-height: 160px;
+}
+
+.cluster__location {
+  font-weight: bold;
+  margin-bottom: 14px;
+}
+
+.cluster__address {
+  color: #ff8663;
+}
+
+.cluster__address:hover {
+  text-decoration: underline;
+}
+
+.cluster__date {
+  color: #828282;
+  -ms-flex-item-align: end;
+      align-self: flex-end;
+}
 /*# sourceMappingURL=style.css.map */

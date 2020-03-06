@@ -1,7 +1,8 @@
 ymaps.ready(init);
 
 let storage = localStorage;
-let feedbacks = [];
+let feedbackArray = [];
+let placemarks = new Set();
 
 
 function init(){
@@ -15,7 +16,7 @@ function init(){
             '</header>',
             '<div class="feedback-content">',
                 '<div class="feedback-list">',
-                    '<ul>{% for item in properties.feedback %}',
+                    '<ul>{% fir item in properties.feedback %}',
                         '<li>',
                             '<span class="feedback__name">{{ properties.name|raw }}</span>',
                             '<span class="feedback__location">{{ properties.location|raw }}</span>',
@@ -75,6 +76,8 @@ function init(){
                 const text = document.querySelector('.feedback__text');
                 const time = document.querySelector('.feedback__date');
                 const date = new Date();
+                const coords = this._data.properties.coords;
+                const address = this._data.properties.address;
 
                 // сохраняем введенные данные в LS 
                 if (feedbackName.value == '' || feedbackLocation.value == '' || feedbackText.value == '') {
@@ -84,6 +87,8 @@ function init(){
                 } else {
                     try {
                         storage.data = JSON.stringify({
+                            coords: coords,
+                            address: address,
                             name: feedbackName.value,
                             location: feedbackLocation.value,
                             feedback: feedbackText.value,
@@ -98,12 +103,8 @@ function init(){
                 let data = JSON.parse(storage.data || '{}');
 
                 // добавляем созданный комментарий (объект с данными о коммментарии) в массив с комментариями
-                feedbacks.push(data);
+                feedbackArray.push(data);
 
-                console.log(feedbacks);
-
-                //  НЕ ДОЛЖНО ВЗАИМОЗАМЕНЯТЬ ЕСЛИ НАПИСАТЬ ВТОРОЙ ОТЗЫВ
-                // не выводится в кластер и при открытии метки
                 name.innerHTML = data.name;
                 location.innerHTML = data.location;
                 text.innerHTML = data.feedback;
@@ -116,25 +117,24 @@ function init(){
             }, 
 
             addPoint: function(e) {
-                const coords = this._data.properties.coords;
-                const address = this._data.properties.address;
-
-                feedbacks.forEach(feedback => {
-                    const placemark = new ymaps.Placemark(coords, {
-                        address: address,
-                        name: feedbacks.name, 
-                        location: feedbacks.location,
-                        feedback: feedbacks.feedback,
-                        date: feedbacks.date
-                        
-                    }, {
-                        preset: 'islands#orangeIcon'
-                    });
-    
-                    console.log(placemark)
-                
-                    map.geoObjects.add(placemark);
-                    clusterer.add(placemark);
+                feedbackArray.forEach(item => {
+                    if (item == feedbackArray[feedbackArray.length - 1]) {
+                        const placemark = new ymaps.Placemark(item.coords, {
+                            coords: item.coords,
+                            address: item.address,
+                            name: item.name, 
+                            location: item.location,
+                            feedback: item.feedback,
+                            date: item.date
+                            
+                        }, {
+                            preset: 'islands#orangeIcon'
+                        });
+                    
+                        placemarks.add(placemark);
+                        map.geoObjects.add(placemark);
+                        clusterer.add(placemark);
+                    }
                 })
             }
         }),
@@ -147,9 +147,15 @@ function init(){
     }, { balloonLayout: BalloonLayout});
 
     const clasterContentLayout = ymaps.templateLayoutFactory.createClass(`
-    <div class="cluster__header">Заголовок</div>
-    <div class="cluster__link"><a class="search_by_address">{{ properties.address|raw }}</a></div>
-    <div class=cluster__review>{{ properties.feedback|raw }}</div>`);
+    <div class="cluster">
+    <div class="cluster__header">
+    <div class="cluster__location">{{ properties.location|raw }}</div>
+    <div class="cluster__address"><a class="search_by_address">{{ properties.address|raw }}</a></div>
+    </div>
+    <div class="cluster__feedback">{{ properties.feedback|raw }}</div>
+    <div class="cluster__date">{{ properties.date|raw }}</div>
+    </div>
+    `);
 
     const clusterer = new ymaps.Clusterer({
         preset: 'islands#invertedOrangeClusterIcons', // стили кластера
@@ -187,6 +193,25 @@ function init(){
         });
     });
 
+    document.addEventListener('click', (e) => {
+        let el = e.target;
+
+        if (el.className === 'search_by_address') {
+            e.preventDefault();
+
+            feedbackArray.forEach(feedback => {
+                if (el.text === feedback.address) {
+                    // ymaps.geoQuery(placemarks)
+                    //     .searchIntersect(map)
+                    //     .each(function(pm) {
+                    //         console.log(pm);
+                    //     })
+                    map.ballon.open(feedback.coords, {})
+                }
+            })
+        }
+
+    })
 }
 
 

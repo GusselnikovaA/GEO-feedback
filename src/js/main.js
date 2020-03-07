@@ -2,10 +2,10 @@ ymaps.ready(init);
 
 let storage = localStorage;
 let feedbackArray = [];
-let placemarks = new Set();
 
 
 function init(){
+
     // создаем макет балуна
     const BalloonLayout = ymaps.templateLayoutFactory.createClass([
         '<div class="feedback">',
@@ -16,7 +16,8 @@ function init(){
             '</header>',
             '<div class="feedback-content">',
                 '<div class="feedback-list">',
-                    '<ul>{% fir item in properties.feedback %}',
+                    '<ul>',
+                        '{% fr item in properties.feedbackArray %}',
                         '<li>',
                             '<span class="feedback__name">{{ properties.name|raw }}</span>',
                             '<span class="feedback__location">{{ properties.location|raw }}</span>',
@@ -67,6 +68,7 @@ function init(){
                 this.events.fire('userclose');
             },
 
+            // метод добавления отзыва
             addFeedback: function(e) {
                 const feedbackName = document.querySelector('.feedback-form__name');
                 const feedbackLocation = document.querySelector('.feedback-form__location');
@@ -79,12 +81,13 @@ function init(){
                 const coords = this._data.properties.coords;
                 const address = this._data.properties.address;
 
-                // сохраняем введенные данные в LS 
+                // валидация формы
                 if (feedbackName.value == '' || feedbackLocation.value == '' || feedbackText.value == '') {
-                    console.error('Заполните все поля!');
+                    alert('Заполните все поля!');
 
                     return;
                 } else {
+                    // сохраняем введенные данные в LS 
                     try {
                         storage.data = JSON.stringify({
                             coords: coords,
@@ -105,6 +108,7 @@ function init(){
                 // добавляем созданный комментарий (объект с данными о коммментарии) в массив с комментариями
                 feedbackArray.push(data);
 
+                // выводим комментарий в соответствующее поле
                 name.innerHTML = data.name;
                 location.innerHTML = data.location;
                 text.innerHTML = data.feedback;
@@ -116,6 +120,7 @@ function init(){
                 feedbackText.value = '';
             }, 
 
+            // метод добавления точки на карту
             addPoint: function(e) {
                 feedbackArray.forEach(item => {
                     if (item == feedbackArray[feedbackArray.length - 1]) {
@@ -126,12 +131,10 @@ function init(){
                             location: item.location,
                             feedback: item.feedback,
                             date: item.date
-                            
                         }, {
                             preset: 'islands#orangeIcon'
                         });
                     
-                        placemarks.add(placemark);
                         map.geoObjects.add(placemark);
                         clusterer.add(placemark);
                     }
@@ -139,6 +142,7 @@ function init(){
             }
         }),
 
+    // создание карты 
     map = new ymaps.Map("map", {
             center: [59.94, 30.32],
             zoom: 12,
@@ -171,6 +175,7 @@ function init(){
 
     map.geoObjects.add(clusterer);
 
+    // открытие балуна при нажатии на любое место карты
     map.events.add('click', function (e) {
         const coords = e.get('coords');
         const geoCoords = ymaps.geocode(coords);
@@ -193,6 +198,7 @@ function init(){
         });
     });
 
+    // открытие баллуна при нажатии на адрес в карусели clasterer
     document.addEventListener('click', (e) => {
         let el = e.target;
 
@@ -201,120 +207,17 @@ function init(){
 
             feedbackArray.forEach(feedback => {
                 if (el.text === feedback.address) {
-                    // ymaps.geoQuery(placemarks)
-                    //     .searchIntersect(map)
-                    //     .each(function(pm) {
-                    //         console.log(pm);
-                    //     })
-                    map.ballon.open(feedback.coords, {})
+                    map.balloon.open(feedback.coords, {
+                        properties: {
+                            address: feedback.address,
+                            name: feedback.name, 
+                            location: feedback.location,
+                            feedback: feedback.feedback,
+                            date: feedback.date
+                        }
+                    })
                 }
             })
         }
-
     })
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// МАТЕРИАЛ ПО ВЕБИНАРУ 
-// ymaps.ready(init);
-
-// var placemarks = [
-//     {
-//         latitude: 59.97,
-//         longitude: 30.31,
-//         hintContent: '<div class="map__hint">улица Литераторов, дом 19</div>',
-//         balloonContent: [
-//             '<div class="map__balloon">',
-//             '<img class="map__burger-img" src="img/burger.png" alt="Бургер" style="width: 100px; height: 100px"/>',
-//             'Самые вкусные бургеры у нас!',
-//             '</div>'
-//         ]
-//     },
-//     {
-//         latitude: 59.94,
-//         longitude: 30.25,
-//         hintContent: '<div class="map__hint">Малый проспект В О, дом 64</div>',
-//         balloonContent: [
-//             '<div class="map__balloon">',
-//             '<img class="map__burger-img" src="img/burger.png" alt="Бургер" style="width: 100px; height: 100px"/>',
-//             'Самые вкусные бкргеры!',
-//             '</div>'
-//         ]
-//     },
-//     {
-//         latitude: 59.93,
-//         longitude: 30.34,
-//         hintContent: '<div class="map__hint">набережная реки Фонтанки, дом 56</div>',
-//         balloonContent: [
-//             '<div class="map__balloon">',
-//             '<img class="map__burger-img" src="img/burger.png" alt="Бургер" style="width: 100px; height: 100px"/>',
-//             'Самые вкусные бкргеры!',
-//             '</div>'
-//         ]
-//     }
-
-// ]
-
-// geoObjects = [];
-
-// function init(){
-//     var map = new ymaps.Map("map", {
-//         center: [59.94, 30.32],
-//         zoom: 12,
-//         controls: ['zoomControl'],
-//         behaviors: ['drag']
-//     });
-
-//     for (var i = 0; i < placemarks.length; i++) {
-//         // создаем метку с коорднатами
-//         geoObjects[i] = new ymaps.Placemark([placemarks[i].latitude, placemarks[i].longitude], 
-//             {
-//                 hintContent: placemarks[i].hintContent,
-//                 balloonContent: placemarks[i].balloonContent.join('')
-//             },
-//             {
-//                 iconLayout: 'default#image',
-//                 iconImageHref: 'img/sprite.png',
-//                 iconImageSize: [46,57],
-//                 iconImageOffset: [-23, -57],
-//                 iconImageClipRect: [[415,0],[461,57]]
-//             });
-//     };
-
-//     var clusterer = new ymaps.Clusterer({
-//         clusterIcons: [
-//             {
-//                 href: 'img/burger.png',
-//                 size: [70, 70],
-//                 offset: [-35, -35]
-//             }
-//         ],
-//         clusterIconContentLayout: null
-//     });
-
-//     map.geoObjects.add(clusterer);
-//     clusterer.add(geoObjects)
-// }

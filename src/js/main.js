@@ -16,19 +16,19 @@ function init(){
             </header>
             <div class="feedback-content">
                 <div class="feedback-list">
-                {% if (properties.feedbackArray.length == 0) %}
-                    <div class="feedback__text feedback__none">Отзывов пока нет...</div>
-                {% else %}
-                    <ul>
-                    {% for item in properties.feedbackArray %}
-                        <li>
-                            <span class="feedback__name">$[item.name]</span>
-                            <span class="feedback__location">$[item.location]</span>
-                            <span class="feedback__date">$[item.date]</span>
-                            <div class="feedback__text">$[item.feedback]</div>
-                        </li>
-                    {% endfor %}
-                    </ul>
+                    {% if (properties.feedbackArray.length == 0) %}
+                        <div class="feedback__text feedback__none">Отзывов пока нет...</div>
+                    {% else %}
+                        <ul>
+                        {% for item in properties.feedbackArray %}
+                            <li>
+                                <span class="feedback__name">$[item.name]</span>
+                                <span class="feedback__location">$[item.location]</span>
+                                <span class="feedback__date">$[item.date]</span>
+                                <div class="feedback__text">$[item.feedback]</div>
+                            </li>
+                        {% endfor %}
+                        </ul>
                     {% endif %}
                 </div>
                 <form class="feedback-form" action="#">
@@ -46,6 +46,9 @@ function init(){
                 BalloonLayout.superclass.build.call(this);
                 const addButton = document.querySelector('.feedback-form__button');
                 const closeButton = document.querySelector('.feedback__close');
+                const feedbackList = document.querySelector('.feedback-list');
+
+                feedbackList.scrollTop = feedbackList.scrollHeight;
 
                 addButton.addEventListener('click', (e) => { 
                     e.preventDefault();
@@ -139,8 +142,6 @@ function init(){
                             feedbackArray: newData
                         }
                     });
-
-                console.log('новый массив', newData)
 
                 // очищаются поля ввода
                 feedbackName.value = '';

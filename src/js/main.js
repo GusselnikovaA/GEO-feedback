@@ -46,8 +46,6 @@ function init(){
                 BalloonLayout.superclass.build.call(this);
                 const addButton = document.querySelector('.feedback-form__button');
                 const closeButton = document.querySelector('.feedback__close');
-                const address = this._data.properties._data;
-                let reviews = [];
 
                 addButton.addEventListener('click', (e) => { 
                     e.preventDefault();
@@ -56,21 +54,6 @@ function init(){
                 closeButton.addEventListener('click', () => { 
                     this.onCloseClick();
                 });
-
-
-                // console.log('build', this.getData().properties);
-                // feedbackArray.forEach(item => {
-                //     console.log('адрес точки', address);
-                //     console.log('адрес отзыва', item.address);
-                //     if (address == item.address) {
-                //         reviews.push(item)
-                //     }
-                // });
-                //     console.log('глобальные отзывы', feedbackArray)
-                //     console.log('отзывы', reviews)
-                //     console.log('до', this.getData().properties.feedbackArray);
-                //     this.getData().properties.feedbackArray = reviews
-                // console.log('после', this.getData().properties.feedbackArray)
             },
 
             clear: function () {
@@ -96,8 +79,14 @@ function init(){
                 const feedbackLocation = document.querySelector('.feedback-form__location');
                 const feedbackText = document.querySelector('.feedback-form__text');
                 const date = new Date();
-                const coords = this._data.properties.coords;
-                const address = this._data.properties.address;
+                let coords = this._data.properties.coords;
+                let address = this._data.properties.address;
+                let newData = {};
+
+                if (this.getData().properties._data) {
+                    coords = this._data.properties._data.coords;
+                    address = this._data.properties._data.address;
+                }
 
                 // валидация формы
                 if (feedbackName.value == '' || feedbackLocation.value == '' || feedbackText.value == '') {
@@ -125,11 +114,19 @@ function init(){
 
                 // добавляем созданный комментарий (объект с данными о коммментарии) в массив с комментариями
                 feedbackArray.push(data);
+                console.log('data', data)
 
-                // добавление отзыва в балун 
-                let newData = this.getData().properties.feedbackArray;
+                // условие, проверяющее открыт балун по метке или нет
+                if (this.getData().properties._data) {
+                    newData = this.getData().properties._data.feedbackArray;
+                    console.log('адрес', address)
+                } else {
+                    newData = this.getData().properties.feedbackArray;
+                }
+
+                // добавление отзыва в балун
                 newData.push({
-                    address: data.address,
+                    address: address,
                     name: data.name,
                     location: data.location,
                     feedback: data.feedback,
@@ -137,9 +134,13 @@ function init(){
                 });
                     await this.setData({
                         properties: {
-                            address, coords, feedbackArray: newData
+                            address, 
+                            coords,
+                            feedbackArray: newData
                         }
                     });
+
+                console.log('новый массив', newData)
 
                 // очищаются поля ввода
                 feedbackName.value = '';
@@ -254,6 +255,7 @@ function init(){
                     map.balloon.open(coords, {
                         properties: {
                             address: address,
+                            coords: coords,
                             feedbackArray: reviews
                         }
                     })

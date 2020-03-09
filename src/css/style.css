@@ -458,8 +458,13 @@ input::placeholder, textarea::placeholder {
 }
 
 .feedback-list {
-  min-height: 150px;
+  height: 150px;
   color: #4f4f4f;
+  margin-bottom: 25px;
+  overflow: scroll;
+}
+
+.feedback-list li {
   margin-bottom: 25px;
 }
 

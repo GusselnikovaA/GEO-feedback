@@ -52,7 +52,25 @@ function init(){
                 });
                 closeButton.addEventListener('click', () => { 
                     this.onCloseClick();
-                })
+                });
+
+                let reviews = [];
+                const coords = this._data.properties.coords;
+                const address = this._data.properties.address;
+                feedbackArray.forEach(item => {
+                    if (address == item.address) {
+                        reviews.push(item)
+                    }
+                });
+                console.log(address);
+                console.log(feedbackArray);
+                console.log(reviews);
+                reviews = [
+                    {name: 111, location: 111, feedback: 111},
+                    {name: 222, location: 111, feedback: 111},
+                    {name: 333, location: 111, feedback: 111}
+                ]
+                this._data.properties.feedbackArray = reviews;
             },
 
             clear: function () {
@@ -109,6 +127,8 @@ function init(){
                 // добавляем созданный комментарий (объект с данными о коммментарии) в массив с комментариями
                 feedbackArray.push(data);
 
+                // fggtylchild каждого отзыва
+
                 // очищаются поля ввода
                 feedbackName.value = '';
                 feedbackLocation.value = '';
@@ -116,46 +136,51 @@ function init(){
             }, 
 
             // метод добавления точки на карту
-            // addPoint: function(e) {
-            //     feedbackArray.forEach(item => {
-            //         if (item == feedbackArray[feedbackArray.length - 1]) {
-            //             const placemark = new ymaps.Placemark(item.coords, {
-            //                 coords: item.coords,
-            //                 address: item.address,
-            //                 name: item.name, 
-            //                 location: item.location,
-            //                 feedback: item.feedback,
-            //                 date: item.date
-            //             }, {
-            //                 preset: 'islands#orangeIcon'
-            //             });
-                    
-            //             map.geoObjects.add(placemark);
-            //             clusterer.add(placemark);
-            //         }
-            //     })
-            // }
             addPoint: function(e) {
-                let reviews = [];
                 const coords = this._data.properties.coords;
                 const address = this._data.properties.address;
+
                 feedbackArray.forEach(item => {
-                    if (address == item.address) {
-                        reviews.push(item)
+                    if (item == feedbackArray[feedbackArray.length - 1]) {
+                        const placemark = new ymaps.Placemark(coords, {
+                            coords: coords,
+                            address: address,
+                            feedbackArray: [
+                                {
+                                    name: item.name, 
+                                    location: item.location,
+                                    feedback: item.feedback,
+                                    date: item.date
+                                }],
+                            preset: 'islands#orangeIcon'
+                        });
+                    
+                        map.geoObjects.add(placemark);
+                        clusterer.add(placemark);
                     }
                 })
-                console.log(reviews);
-
-                    const placemark = new ymaps.Placemark(coords, {
-                        address: address,
-                        feedbackArray: reviews
-                    }, {
-                        preset: 'islands#orangeIcon'
-                    });
-                
-                    map.geoObjects.add(placemark);
-                    clusterer.add(placemark);
             }
+        //     addPoint: function(e) {
+        //         let reviews = [];
+        //         const coords = this._data.properties.coords;
+        //         const address = this._data.properties.address;
+        //         feedbackArray.forEach(item => {
+        //             if (address == item.address) {
+        //                 reviews.push(item)
+        //             }
+        //         })
+        //         console.log(reviews);
+
+        //             const placemark = new ymaps.Placemark(coords, {
+        //                 address: address,
+        //                 feedbackArray: reviews
+        //             }, {
+        //                 preset: 'islands#orangeIcon'
+        //             });
+                
+        //             map.geoObjects.add(placemark);
+        //             clusterer.add(placemark);
+        //     }
         }),
 
     // создание карты 
@@ -197,6 +222,7 @@ function init(){
     map.events.add('click', function (e) {
         const coords = e.get('coords');
         const geoCoords = ymaps.geocode(coords);
+        console.log('map', coords)
 
         geoCoords.then(function (res) {
             const firstGeoObject = res.geoObjects.get(0);
@@ -215,6 +241,29 @@ function init(){
             });
         });
     });
+
+    map.geoObjects.events.add('click', function(e) {
+        const coords = e.get('coords');
+        const geoCoords = ymaps.geocode(coords);
+        console.log('geo', coords)
+
+        geoCoords.then(function (res) {
+            const firstGeoObject = res.geoObjects.get(0);
+            let obj = {}
+
+            obj.coords = coords;
+            obj.address = firstGeoObject.properties.get('text');
+            obj.feedback = [];
+        
+            map.balloon.open(coords, {
+                properties: {
+                    coords: obj.coords,
+                    address: obj.address,
+                    feedback: obj.feedback
+                }
+            });
+        });
+    })
 
     // открытие баллуна при нажатии на адрес в карусели clasterer
     // document.addEventListener('click', (e) => {

@@ -2,7 +2,7 @@
     display: flex
     flex-direction: column
     justify-content: space-between
-    min-height: 160px
+    min-height: 170px
     &__location 
         font-weight: bold
         margin-bottom: 14px
@@ -13,3 +13,13 @@
     &__date 
         color: lighten($text-color, 20%)
         align-self: flex-end
+
+@media (max-width: 568px) 
+    .ymaps-2-1-75-balloon__layout
+        max-width: 300px 
+
+    .cluster, .ymaps-2-1-75-b-cluster-carousel__pager
+        max-width: 200px
+
+    .ymaps-2-1-75-b-cluster-carousel__nav_type_next
+        right: 55px !important

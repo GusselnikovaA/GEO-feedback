@@ -44,6 +44,9 @@ function init(){
 
             build: function () {
                 BalloonLayout.superclass.build.call(this);
+                this._element = this.getParentElement().querySelector('.feedback');
+                this.applyElementOffset();
+
                 const addButton = document.querySelector('.feedback-form__button');
                 const closeButton = document.querySelector('.feedback__close');
                 const feedbackList = document.querySelector('.feedback-list');
@@ -72,8 +75,32 @@ function init(){
                 BalloonLayout.superclass.clear.call(this);
             },
 
+            applyElementOffset: function () {
+                this._element.style.left = (this._element.offsetLeft) + 'px';
+                this._element.style.top = (this._element.offsetTop) + 'px';
+            },
+
             onCloseClick: function () {
                 this.events.fire('userclose');
+            },
+
+            getShape: function () {
+                if(!this._element) {
+                    return BalloonLayout.superclass.getShape.call(this);
+                }
+
+                var style = getComputedStyle(this._element);
+                var position = {
+                    left: parseFloat(style.left),
+                    top: parseFloat(style.top),
+                };
+
+                return new ymaps.shape.Rectangle(new ymaps.geometry.pixel.Rectangle([
+                    [position.left, position.top], [
+                        position.left + this._element.offsetWidth,
+                        position.top + this._element.offsetHeight
+                    ]
+                ]));
             },
 
             // метод добавления отзыва
@@ -86,9 +113,17 @@ function init(){
                 let address = this._data.properties.address;
                 let newData = {};
 
+                console.log('new data', this.getData().properties)
+
                 if (this.getData().properties._data) {
-                    coords = this._data.properties._data.coords;
-                    address = this._data.properties._data.address;
+                    if (this.getData().properties._data.point) {
+                        this.getData().properties._data.feedbackArray = [];
+                        coords = this.getData().properties._data.point.reverse();
+                        address = this._data.properties._data.address;
+                    } else {
+                        coords = this._data.properties._data.coords;
+                        address = this._data.properties._data.address;
+                    }
                 }
 
                 // валидация формы
@@ -117,12 +152,10 @@ function init(){
 
                 // добавляем созданный комментарий (объект с данными о коммментарии) в массив с комментариями
                 feedbackArray.push(data);
-                console.log('data', data)
 
-                // условие, проверяющее открыт балун по метке или нет
+                // условие, проверяющее открыт балун по метке яндекса, нашей метке, или клику по карте
                 if (this.getData().properties._data) {
                     newData = this.getData().properties._data.feedbackArray;
-                    console.log('адрес', address)
                 } else {
                     newData = this.getData().properties.feedbackArray;
                 }

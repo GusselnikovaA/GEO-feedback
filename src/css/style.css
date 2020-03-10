@@ -556,7 +556,7 @@ input::placeholder, textarea::placeholder {
   -webkit-box-pack: justify;
       -ms-flex-pack: justify;
           justify-content: space-between;
-  min-height: 170px;
+  min-height: 175px;
 }
 
 .cluster__location {

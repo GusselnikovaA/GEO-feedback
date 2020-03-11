@@ -39,8 +39,7 @@ function init(){
                     <button class="feedback-form__button" id="add">Добавить</button>
                 </form>
             </div>
-        </div>'`
-        , {
+        </div>'`, {
 
             build: function () {
                 BalloonLayout.superclass.build.call(this);
@@ -113,8 +112,6 @@ function init(){
                 let address = this._data.properties.address;
                 let newData = {};
 
-                console.log('new data', this.getData().properties)
-
                 if (this.getData().properties._data) {
                     if (this.getData().properties._data.point) {
                         this.getData().properties._data.feedbackArray = [];
@@ -152,6 +149,8 @@ function init(){
 
                 // добавляем созданный комментарий (объект с данными о коммментарии) в массив с комментариями
                 feedbackArray.push(data);
+
+                storage.feedbackArray = JSON.stringify(feedbackArray);
 
                 // условие, проверяющее открыт балун по метке яндекса, нашей метке, или клику по карте
                 if (this.getData().properties._data) {
@@ -209,7 +208,7 @@ function init(){
                         map.geoObjects.add(placemark);
                         clusterer.add(placemark);
                     }
-                })
+                });
             }
         }),
 
@@ -246,6 +245,28 @@ function init(){
         clusterHideIconOnBalloonOpen: false,
     });
 
+    if(storage.feedbackArray.length > 0) {
+        feedbackArray = JSON.parse(storage.feedbackArray || '[]');
+        feedbackArray.forEach(item => {
+                const placemark = new ymaps.Placemark(item.coords, {
+                    coords: item.coords,
+                    address: item.address,
+                    feedbackArray: [
+                        {
+                            name: item.name, 
+                            location: item.location,
+                            feedback: item.feedback,
+                            date: item.date
+                        }],
+                }, {
+                    preset: 'islands#orangeIcon'
+                });
+            
+                map.geoObjects.add(placemark);
+                clusterer.add(placemark);
+            });
+    }
+
     map.geoObjects.add(clusterer);
 
     // открытие балуна при нажатии на любое место карты
@@ -255,7 +276,7 @@ function init(){
 
         geoCoords.then(function (res) {
             const firstGeoObject = res.geoObjects.get(0);
-            let obj = {}
+            let obj = {};
 
             obj.coords = coords;
             obj.address = firstGeoObject.properties.get('text');
@@ -283,7 +304,7 @@ function init(){
                 if (el.text === feedback.address) {
                     reviews.push(feedback);
                     coords = feedback.coords;
-                    address = feedback.address
+                    address = feedback.address;
                 }
                 if (feedback == feedbackArray[feedbackArray.length - 1]) {
                     map.balloon.open(coords, {
@@ -292,9 +313,9 @@ function init(){
                             coords: coords,
                             feedbackArray: reviews
                         }
-                    })
+                    });
                 }
-            })
+            });
         }
-    })
+    });
 }

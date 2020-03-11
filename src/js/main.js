@@ -245,7 +245,7 @@ function init(){
         clusterHideIconOnBalloonOpen: false,
     });
 
-    if(storage.feedbackArray.length > 0) {
+    if(storage.feedbackArray) {
         feedbackArray = JSON.parse(storage.feedbackArray || '[]');
         feedbackArray.forEach(item => {
                 const placemark = new ymaps.Placemark(item.coords, {
